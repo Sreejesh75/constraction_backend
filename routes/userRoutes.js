@@ -32,7 +32,7 @@ const User = require("../models/user");
 
 // Create or return existing user
 router.post("/create-user", async (req, res) => {
-  const { name, email } = req.body;
+  let { name, email } = req.body;
 
   try {
     // Check if user already exists
@@ -42,8 +42,14 @@ router.post("/create-user", async (req, res) => {
       return res.json({
         status: true,
         message: "User already exists",
-        userId: user._id
+        userId: user._id,
+        name: user.name
       });
+    }
+
+    // If name is not provided, use the part of email before @
+    if (!name) {
+      name = email.split('@')[0];
     }
 
     // Create new user
@@ -52,11 +58,65 @@ router.post("/create-user", async (req, res) => {
     res.json({
       status: true,
       message: "User created",
-      userId: user._id
+      userId: user._id,
+      name: user.name
     });
 
   } catch (error) {
     res.json({ status: false, message: "Error", error });
+  }
+});
+
+/**
+ * @swagger
+ * /api/update-name:
+ *   post:
+ *     summary: Update user name
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - name
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Name updated successfully
+ */
+router.post("/update-name", async (req, res) => {
+  const { userId, name } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { name },
+      { new: true } // Return updated document
+    );
+
+    if (!user) {
+      return res.json({
+        status: false,
+        message: "User not found"
+      });
+    }
+
+    res.json({
+      status: true,
+      message: "Name updated successfully",
+      user
+    });
+
+  } catch (error) {
+    res.json({ status: false, message: "Error updating name", error });
   }
 });
 
