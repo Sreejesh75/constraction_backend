@@ -105,13 +105,14 @@ const Material = require("../models/material");
 
 
 router.post("/add-material", async (req, res) => {
-      console.log("BODY RECEIVED:", req.body);
-  const { projectId, name, quantity, price } = req.body;
+  console.log("BODY RECEIVED:", req.body);
+  const { projectId, name, category, quantity, price } = req.body;
 
   try {
     const material = await Material.create({
       projectId,
       name,
+      category,
       quantity,
       price
     });
@@ -147,13 +148,14 @@ router.get("/materials/:projectId", async (req, res) => {
 // Update material
 router.put("/update-material/:materialId", async (req, res) => {
   const { materialId } = req.params;
-  const { name, quantity, price } = req.body;
+  const { name, category, quantity, price } = req.body;
 
   try {
     const updatedMaterial = await Material.findByIdAndUpdate(
       materialId,
       {
         name,
+        category,
         quantity,
         price
       },

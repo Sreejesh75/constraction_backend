@@ -63,7 +63,8 @@ router.post("/create-user", async (req, res) => {
     });
 
   } catch (error) {
-    res.json({ status: false, message: "Error", error });
+    console.error("Create User Error:", error);
+    res.json({ status: false, message: "Error", error: error.message || error.toString() });
   }
 });
 
