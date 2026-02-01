@@ -3,6 +3,8 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+const path = require("path");
+
 // --- MongoDB Connection ---
 mongoose
   .connect("mongodb+srv://sreejeshos7510_db_user:Dbnode1405@cluster0.mih1sk8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
@@ -13,6 +15,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --- Routes ---
 const userRoutes = require("./routes/userRoutes");
@@ -23,6 +26,8 @@ const materialRoutes = require("./routes/materialRoutes");
 app.use("/api", materialRoutes);
 const summaryRoutes = require("./routes/summaryRoutes");
 app.use("/api", summaryRoutes);
+const documentRoutes = require("./routes/documentRoutes");
+app.use("/api", documentRoutes);
 
 
 
@@ -33,7 +38,7 @@ app.get("/", (req, res) => {
 
 // --- Start Server ---
 app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+  console.log("Server running on http://localhost:3000 - Updated");
 });
 
 const swaggerUi = require("swagger-ui-express");
