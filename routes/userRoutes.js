@@ -121,4 +121,38 @@ router.post("/update-name", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/logout:
+ *   post:
+ *     summary: User logout
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ */
+router.post("/logout", async (req, res) => {
+  try {
+    // Since we are using stateless JWT/session (or just client-side storage),
+    // this endpoint mainly serves as a confirmation for the client to clear local state.
+    // If we had a token blacklist or server-side sessions, we would handle invalidation here.
+
+    res.json({
+      status: true,
+      message: "Logged out successfully"
+    });
+  } catch (error) {
+    res.json({ status: false, message: "Error logging out", error });
+  }
+});
+
 module.exports = router;

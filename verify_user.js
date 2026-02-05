@@ -84,6 +84,17 @@ async function runTests() {
             console.log('FAIL: Provided name ignored.');
         }
 
+        console.log('\n--- Test 4: Logout ---');
+        res = await makeRequest('/api/logout', 'POST', {
+            userId: userId1
+        });
+        console.log('Response:', JSON.stringify(res));
+        if (res.status && res.message === "Logged out successfully") {
+            console.log('PASS: Logout successful.');
+        } else {
+            console.log('FAIL: Logout failed.');
+        }
+
     } catch (error) {
         console.error('Test Error:', error.message);
         if (error.code === 'ECONNREFUSED') {
