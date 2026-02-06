@@ -28,6 +28,8 @@ const summaryRoutes = require("./routes/summaryRoutes");
 app.use("/api", summaryRoutes);
 const documentRoutes = require("./routes/documentRoutes");
 app.use("/api", documentRoutes);
+const progressRoutes = require("./routes/progressRoutes");
+app.use("/api", progressRoutes);
 
 
 
@@ -39,7 +41,7 @@ app.get("/", (req, res) => {
 
 app.listen(3000, () => {
   console.log("Server running on  https://api-construction-ehe5.onrender.com - Updated");
-}); 
+});
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
