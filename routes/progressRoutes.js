@@ -56,6 +56,48 @@ router.post("/progress/add", async (req, res) => {
     }
 });
 
+// Update Construction Progress
+router.put("/progress/update", async (req, res) => {
+    try {
+        const { projectId, section, progress, status, startDate, endDate, remarks } =
+            req.body;
+
+        if (!projectId || !section) {
+            return res
+                .status(400)
+                .json({ message: "Project ID and Section are required" });
+        }
+
+        // Check if progress for this section already exists
+        let constructionProgress = await ConstructionProgress.findOne({
+            projectId,
+            section,
+        });
+
+        if (!constructionProgress) {
+            return res.status(404).json({ message: "Progress record not found for this section" });
+        }
+
+        // Update existing record
+        if (progress !== undefined) constructionProgress.progress = progress;
+        if (status !== undefined) constructionProgress.status = status;
+        if (startDate !== undefined) constructionProgress.startDate = startDate;
+        if (endDate !== undefined) constructionProgress.endDate = endDate;
+        if (remarks !== undefined) constructionProgress.remarks = remarks;
+
+        await constructionProgress.save();
+
+        return res.status(200).json({
+            message: "Progress updated successfully",
+            data: constructionProgress,
+        });
+
+    } catch (error) {
+        console.error("Error updating progress:", error);
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+});
+
 // Get Progress for a Project
 router.get("/progress/:projectId", async (req, res) => {
     try {
