@@ -151,13 +151,56 @@ router.put("/update-material/:materialId", async (req, res) => {
   const { name, category, quantity, price } = req.body;
 
   try {
+    const existingMaterial = await Material.findById(materialId);
+
+    if (!existingMaterial) {
+      return res.json({
+        status: false,
+        message: "Material not found"
+      });
+    }
+
+    let remark = "";
+    if (existingMaterial.quantity !== quantity) {
+      const diff = quantity - existingMaterial.quantity;
+      remark += `Quantity changed from ${existingMaterial.quantity} to ${quantity} (${diff > 0 ? "+" : ""}${diff}). `;
+    }
+    if (existingMaterial.price !== price) {
+      const diff = price - existingMaterial.price;
+      remark += `Price changed from ${existingMaterial.price} to ${price} (${diff > 0 ? "+" : ""}${diff}). `;
+    }
+
+    // Calculate extra cost added
+    const oldTotal = existingMaterial.quantity * existingMaterial.price;
+    const newTotal = quantity * price;
+    const costDiff = newTotal - oldTotal;
+
+    if (costDiff !== 0) {
+      remark += `Total value change: ${costDiff > 0 ? "+" : ""}${costDiff}.`;
+    }
+
+    const updateData = {
+      name,
+      category,
+      quantity,
+      price,
+      lastUpdateRemark: remark
+    };
+
+    const historyEntry = {
+      date: new Date(),
+      remark,
+      previousQuantity: existingMaterial.quantity,
+      newQuantity: quantity,
+      previousPrice: existingMaterial.price,
+      newPrice: price
+    };
+
     const updatedMaterial = await Material.findByIdAndUpdate(
       materialId,
       {
-        name,
-        category,
-        quantity,
-        price
+        $set: updateData,
+        $push: { updateHistory: historyEntry }
       },
       { new: true } // return updated document
     );

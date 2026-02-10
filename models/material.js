@@ -32,7 +32,18 @@ const materialSchema = new mongoose.Schema({
   },
   quantity: Number,
   price: Number,
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+  lastUpdateRemark: String,
+  updateHistory: [
+    {
+      date: { type: Date, default: Date.now },
+      remark: String,
+      previousQuantity: Number,
+      newQuantity: Number,
+      previousPrice: Number,
+      newPrice: Number
+    }
+  ]
 });
 
 module.exports = mongoose.model("Material", materialSchema);
