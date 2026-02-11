@@ -9,8 +9,8 @@ const documentSchema = new Schema({
     },
     category: {
         type: String,
-        required: true,
-        enum: ["Bill", "Plan", "Permit", "Contract", "Other"] // Define common categories, can be expanded
+        required: false, // Changed from true to false to allow flexibility
+        default: "General" // distinct from "Other" which was in the enum
     },
     fileUrl: {
         type: String,

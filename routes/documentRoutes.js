@@ -57,8 +57,8 @@ router.post("/upload-document", upload.single("file"), async (req, res) => {
             return res.status(400).json({ status: false, message: "No file uploaded" });
         }
 
-        if (!projectId || !category) {
-            return res.status(400).json({ status: false, message: "Project ID and Category are required" });
+        if (!projectId) {
+            return res.status(400).json({ status: false, message: "Project ID is required" });
         }
 
         // Create document record
