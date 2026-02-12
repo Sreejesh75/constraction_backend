@@ -1,0 +1,31 @@
+1. Adding material...
+Material created: 698db86463b18775468e08ec
+
+2. Getting Initial History...
+Initial History Length: 0
+
+3. Adding stock (Update 1)...
+
+4. Adding stock (Update 2)...
+
+5. Fetching History...
+History Entries: 2
+
+Entry 1:
+  Date: 2026-02-12T11:24:20.773Z
+  Remark: Added 20 units @ 600/unit. Total extra cost: 12000. New Avg Price: 531.25
+  Added Qty: 20
+  Purchase Price: 600
+  Total Cost: 12000
+
+Entry 2:
+  Date: 2026-02-12T11:24:20.669Z
+  Remark: Added 10 units @ 550/unit. Total extra cost: 5500. New Avg Price: 508.33
+  Added Qty: 10
+  Purchase Price: 550
+  Total Cost: 5500
+
+SUCCESS: History retrieval verified.
+
+6. Cleanup...
+Material deleted.

@@ -1,6 +1,41 @@
 const express = require("express");
 const router = express.Router();
 const Material = require("../models/material");
+
+console.log("Material Routes Loaded");
+
+// Get material history (Placed at top to avoid conflicts)
+router.get("/material-history/:materialId", async (req, res) => {
+  const { materialId } = req.params;
+
+  try {
+    const material = await Material.findById(materialId, "name category updateHistory");
+
+    if (!material) {
+      return res.json({
+        status: false,
+        message: "Material not found"
+      });
+    }
+
+    // Sort history by newest first
+    const history = material.updateHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.json({
+      status: true,
+      data: history
+    });
+
+  } catch (error) {
+    console.error("Error fetching material history:", error);
+    res.json({
+      status: false,
+      message: "Error fetching material history",
+      error
+    });
+  }
+});
+
 /**
  * @swagger
  * /api/add-material:
@@ -260,6 +295,39 @@ router.put("/update-material/:materialId", async (req, res) => {
     res.json({
       status: false,
       message: "Error updating material",
+      error
+    });
+  }
+});
+
+// Get material history
+router.get("/material-history/:materialId", async (req, res) => {
+  console.log("HIT material-history route with ID:", req.params.materialId);
+  const { materialId } = req.params;
+
+  try {
+    const material = await Material.findById(materialId, "name category updateHistory");
+
+    if (!material) {
+      return res.json({
+        status: false,
+        message: "Material not found"
+      });
+    }
+
+    // Sort history by newest first
+    const history = material.updateHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.json({
+      status: true,
+      data: history
+    });
+
+  } catch (error) {
+    console.error("Error fetching material history:", error);
+    res.json({
+      status: false,
+      message: "Error fetching material history",
       error
     });
   }
