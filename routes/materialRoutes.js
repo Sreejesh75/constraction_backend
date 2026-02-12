@@ -146,9 +146,10 @@ router.get("/materials/:projectId", async (req, res) => {
 });
 
 // Update material
+// Update material
 router.put("/update-material/:materialId", async (req, res) => {
   const { materialId } = req.params;
-  const { name, category, quantity, price } = req.body;
+  const { name, category, quantity, price, addedQuantity, unitPriceAtPurchase } = req.body;
 
   try {
     const existingMaterial = await Material.findById(materialId);
@@ -161,39 +162,75 @@ router.put("/update-material/:materialId", async (req, res) => {
     }
 
     let remark = "";
-    if (existingMaterial.quantity !== quantity) {
-      const diff = quantity - existingMaterial.quantity;
-      remark += `Quantity changed from ${existingMaterial.quantity} to ${quantity} (${diff > 0 ? "+" : ""}${diff}). `;
-    }
-    if (existingMaterial.price !== price) {
-      const diff = price - existingMaterial.price;
-      remark += `Price changed from ${existingMaterial.price} to ${price} (${diff > 0 ? "+" : ""}${diff}). `;
-    }
+    let finalQuantity = quantity;
+    let finalPrice = price;
+    let historyEntry = {};
 
-    // Calculate extra cost added
-    const oldTotal = existingMaterial.quantity * existingMaterial.price;
-    const newTotal = quantity * price;
-    const costDiff = newTotal - oldTotal;
+    // Check if this is an "Add Stock" operation
+    if (addedQuantity !== undefined && addedQuantity !== null) {
+      const addedQty = parseFloat(addedQuantity);
+      const purchasePrice = parseFloat(unitPriceAtPurchase || 0); // Default to 0 if not provided, or handle error
 
-    if (costDiff !== 0) {
-      remark += `Total value change: ${costDiff > 0 ? "+" : ""}${costDiff}.`;
+      // Calculate new values
+      const oldTotalValue = existingMaterial.quantity * existingMaterial.price;
+      const newStockValue = addedQty * purchasePrice;
+      const totalValue = oldTotalValue + newStockValue;
+
+      finalQuantity = existingMaterial.quantity + addedQty;
+      finalPrice = finalQuantity > 0 ? totalValue / finalQuantity : 0; // Avoid NaN
+
+      remark = `Added ${addedQty} units @ ${purchasePrice}/unit. Total extra cost: ${newStockValue}. New Avg Price: ${finalPrice.toFixed(2)}`;
+
+      historyEntry = {
+        date: new Date(),
+        remark,
+        previousQuantity: existingMaterial.quantity,
+        newQuantity: finalQuantity,
+        previousPrice: existingMaterial.price,
+        newPrice: finalPrice,
+        addedQuantity: addedQty,
+        unitPriceAtPurchase: purchasePrice,
+        totalPurchaseCost: newStockValue
+      };
+    } else {
+      // Standard Update (Directly setting quantity/price)
+      finalQuantity = quantity !== undefined ? parseFloat(quantity) : existingMaterial.quantity;
+      finalPrice = price !== undefined ? parseFloat(price) : existingMaterial.price;
+
+      if (existingMaterial.quantity !== finalQuantity) {
+        const diff = finalQuantity - existingMaterial.quantity;
+        remark += `Quantity changed from ${existingMaterial.quantity} to ${finalQuantity} (${diff > 0 ? "+" : ""}${diff}). `;
+      }
+      if (existingMaterial.price !== finalPrice) {
+        const diff = finalPrice - existingMaterial.price;
+        remark += `Price changed from ${existingMaterial.price} to ${finalPrice} (${diff > 0 ? "+" : ""}${diff}). `;
+      }
+
+      // Calculate extra cost added (value difference)
+      const oldTotal = existingMaterial.quantity * existingMaterial.price;
+      const newTotal = finalQuantity * finalPrice;
+      const costDiff = newTotal - oldTotal;
+
+      if (costDiff !== 0) {
+        remark += `Total value change: ${costDiff > 0 ? "+" : ""}${costDiff}.`;
+      }
+
+      historyEntry = {
+        date: new Date(),
+        remark,
+        previousQuantity: existingMaterial.quantity,
+        newQuantity: finalQuantity,
+        previousPrice: existingMaterial.price,
+        newPrice: finalPrice
+      };
     }
 
     const updateData = {
-      name,
-      category,
-      quantity,
-      price,
+      name: name || existingMaterial.name, // Keep existing name if not provided
+      category: category || existingMaterial.category, // Keep existing category if not provided
+      quantity: finalQuantity,
+      price: finalPrice,
       lastUpdateRemark: remark
-    };
-
-    const historyEntry = {
-      date: new Date(),
-      remark,
-      previousQuantity: existingMaterial.quantity,
-      newQuantity: quantity,
-      previousPrice: existingMaterial.price,
-      newPrice: price
     };
 
     const updatedMaterial = await Material.findByIdAndUpdate(
@@ -219,6 +256,7 @@ router.put("/update-material/:materialId", async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Error updating material:", error);
     res.json({
       status: false,
       message: "Error updating material",

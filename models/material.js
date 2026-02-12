@@ -40,8 +40,11 @@ const materialSchema = new mongoose.Schema({
       remark: String,
       previousQuantity: Number,
       newQuantity: Number,
-      previousPrice: Number,
-      newPrice: Number
+      previousPrice: Number, // This is the average unit price before update
+      newPrice: Number,      // This is the average unit price after update
+      addedQuantity: Number, // Quantity added in this specific update
+      unitPriceAtPurchase: Number, // Unit price of the added quantity
+      totalPurchaseCost: Number // Total cost of the added quantity (addedQuantity * unitPriceAtPurchase)
     }
   ]
 });

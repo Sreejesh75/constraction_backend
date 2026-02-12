@@ -1,0 +1,13 @@
+1. Adding new material...
+Material created: 698da7f6996de151abbe698a
+
+2. Adding stock (10 units @ 300/unit)...
+Updated Material:
+- Quantity: 20 (Expected: 20)
+- Price: 250 (Expected: 250)
+- Last Remark: Added 10 units @ 300/unit. Total extra cost: 3000. New Avg Price: 250.00
+Last History Entry: {"date":"2026-02-12T10:14:14.688Z","remark":"Added 10 units @ 300/unit. Total extra cost: 3000. New Avg Price: 250.00","previousQuantity":10,"newQuantity":20,"previousPrice":200,"newPrice":250,"addedQuantity":10,"unitPriceAtPurchase":300,"totalPurchaseCost":3000,"_id":"698da7f6996de151abbe698d"}
+SUCCESS: Stock addition logic verify!
+
+3. Testing cleanup (Deleting material)...
+Material deleted.
