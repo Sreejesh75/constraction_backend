@@ -50,7 +50,7 @@ const upload = multer({ storage: storage });
  */
 router.post("/upload-document", upload.single("file"), async (req, res) => {
     try {
-        const { projectId, category } = req.body;
+        const { projectId, category, customName } = req.body;
         const file = req.file;
 
         if (!file) {
@@ -65,6 +65,7 @@ router.post("/upload-document", upload.single("file"), async (req, res) => {
         const newDocument = await Document.create({
             projectId,
             category,
+            customName: customName || file.originalname,
             fileUrl: file.path.replace(/\\/g, "/"), // Store standardized path
             fileName: file.filename,
             originalName: file.originalname,

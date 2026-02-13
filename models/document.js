@@ -12,6 +12,10 @@ const documentSchema = new Schema({
         required: false, // Changed from true to false to allow flexibility
         default: "General" // distinct from "Other" which was in the enum
     },
+    customName: {
+        type: String,
+        required: false
+    },
     fileUrl: {
         type: String,
         required: true
