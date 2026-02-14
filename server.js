@@ -3,13 +3,19 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+require("dotenv").config();
 const path = require("path");
 
 // MongoDB Connection 
 mongoose
-  .connect("mongodb+srv://sreejeshos7510_db_user:Dbnode1405@cluster0.mih1sk8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log("DB Error: ", err));
+  .catch((err) => {
+    console.log("DB Error: ", err);
+    if (err.name === 'MongooseServerSelectionError') {
+      console.error('Make sure your current IP address is whitelisted in MongoDB Atlas!');
+    }
+  });
 
 
 app.use(cors());
