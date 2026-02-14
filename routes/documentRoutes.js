@@ -5,22 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const Document = require("../models/document");
 
-// --- Multer Configuration ---
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = "uploads/";
-        // Create uploads directory if it doesn't exist
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        // Unique filename: timestamp + original extension
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+const { storage, cloudinary } = require("../config/cloudinary");
 
 const upload = multer({ storage: storage });
 
@@ -66,7 +51,8 @@ router.post("/upload-document", upload.single("file"), async (req, res) => {
             projectId,
             category,
             customName: customName || file.originalname,
-            fileUrl: file.path.replace(/\\/g, "/"), // Store standardized path
+            fileUrl: file.path,
+            publicId: file.filename,
             fileName: file.filename,
             originalName: file.originalname,
             mimeType: file.mimetype,
@@ -141,10 +127,14 @@ router.delete("/delete-document/:documentId", async (req, res) => {
             return res.status(404).json({ status: false, message: "Document not found" });
         }
 
-        // Delete file from filesystem
-        const filePath = document.fileUrl;
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+        // Delete file from Cloudinary or filesystem
+        if (document.publicId) {
+            await cloudinary.uploader.destroy(document.publicId);
+        } else {
+            const filePath = document.fileUrl;
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
         }
 
         // Delete record from DB

@@ -20,6 +20,10 @@ const documentSchema = new Schema({
         type: String,
         required: true
     },
+    publicId: {
+        type: String,
+        required: false
+    },
     fileName: {
         type: String,
         required: true
