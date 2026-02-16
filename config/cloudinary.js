@@ -7,11 +7,14 @@ cloudinary.config({
     api_secret: 'x8cNgQAK35P1fq92xy4nsIRtQz4'
 });
 
-params: async (req, file) => {
-    return {
-        folder: 'construction_app_documents',
-        resource_type: 'auto',
-    };
-},
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        return {
+            folder: 'construction_app_documents',
+            resource_type: 'auto',
+        };
+    },
+});
 
-    module.exports = { cloudinary, storage };
+module.exports = { cloudinary, storage };

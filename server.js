@@ -36,6 +36,8 @@ const documentRoutes = require("./routes/documentRoutes");
 app.use("/api", documentRoutes);
 const progressRoutes = require("./routes/progressRoutes");
 app.use("/api", progressRoutes);
+const labourRoutes = require("./routes/labourRoutes");
+app.use("/api/labour", labourRoutes);
 
 
 
