@@ -7,14 +7,11 @@ cloudinary.config({
     api_secret: 'x8cNgQAK35P1fq92xy4nsIRtQz4'
 });
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
+params: async (req, file) => {
+    return {
         folder: 'construction_app_documents',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'doc', 'docx', 'txt'],
-        // resource_type: 'auto' is handled by multer-storage-cloudinary but explicitly:
-        resource_type: 'auto'
-    },
-});
+        resource_type: 'auto',
+    };
+},
 
-module.exports = { cloudinary, storage };
+    module.exports = { cloudinary, storage };
