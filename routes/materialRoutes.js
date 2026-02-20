@@ -150,7 +150,20 @@ router.post("/add-material", async (req, res) => {
       category,
       quantity,
       price,
-      usedQuantity: usedQuantity || 0
+      usedQuantity: usedQuantity || 0,
+      updateHistory: [
+        {
+          date: new Date(),
+          remark: `Initial Purchase: ${quantity} units @ ${price}/unit. Total cost: ${quantity * price}`,
+          previousQuantity: 0,
+          newQuantity: quantity,
+          previousPrice: 0,
+          newPrice: price,
+          addedQuantity: quantity,
+          unitPriceAtPurchase: price,
+          totalPurchaseCost: quantity * price
+        }
+      ]
     });
 
     res.json({
