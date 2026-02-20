@@ -31,6 +31,7 @@ const materialSchema = new mongoose.Schema({
     required: true
   },
   quantity: Number,
+  usedQuantity: { type: Number, default: 0 },
   price: Number,
   date: { type: Date, default: Date.now },
   lastUpdateRemark: String,

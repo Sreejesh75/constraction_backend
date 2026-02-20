@@ -141,7 +141,7 @@ router.get("/material-history/:materialId", async (req, res) => {
 
 router.post("/add-material", async (req, res) => {
   console.log("BODY RECEIVED:", req.body);
-  const { projectId, name, category, quantity, price } = req.body;
+  const { projectId, name, category, quantity, price, usedQuantity } = req.body;
 
   try {
     const material = await Material.create({
@@ -149,7 +149,8 @@ router.post("/add-material", async (req, res) => {
       name,
       category,
       quantity,
-      price
+      price,
+      usedQuantity: usedQuantity || 0
     });
 
     res.json({
@@ -328,6 +329,69 @@ router.get("/material-history/:materialId", async (req, res) => {
     res.json({
       status: false,
       message: "Error fetching material history",
+      error
+    });
+  }
+});
+
+// Log material usage
+router.put("/log-usage/:materialId", async (req, res) => {
+  const { materialId } = req.params;
+  const { quantityUsed, date, remark } = req.body;
+
+  try {
+    const existingMaterial = await Material.findById(materialId);
+
+    if (!existingMaterial) {
+      return res.json({
+        status: false,
+        message: "Material not found"
+      });
+    }
+
+    const usedQty = parseFloat(quantityUsed);
+    if (isNaN(usedQty) || usedQty <= 0) {
+      return res.json({
+        status: false,
+        message: "Invalid quantity"
+      });
+    }
+
+    const newUsedQuantity = (existingMaterial.usedQuantity || 0) + usedQty;
+    const usageRemark = remark || `Used ${usedQty} units.`;
+
+    const historyEntry = {
+      date: date ? new Date(date) : new Date(),
+      remark: usageRemark,
+      previousQuantity: existingMaterial.quantity,
+      newQuantity: existingMaterial.quantity, // Total quantity doesn't change here
+      previousPrice: existingMaterial.price,
+      newPrice: existingMaterial.price
+    };
+
+    const updatedMaterial = await Material.findByIdAndUpdate(
+      materialId,
+      {
+        $set: {
+          usedQuantity: newUsedQuantity,
+          lastUpdateRemark: usageRemark
+        },
+        $push: { updateHistory: historyEntry }
+      },
+      { new: true }
+    );
+
+    res.json({
+      status: true,
+      message: "Material usage logged successfully",
+      material: updatedMaterial
+    });
+
+  } catch (error) {
+    console.error("Error logging material usage:", error);
+    res.json({
+      status: false,
+      message: "Error logging material usage",
       error
     });
   }
