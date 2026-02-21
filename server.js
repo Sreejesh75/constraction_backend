@@ -38,7 +38,8 @@ const progressRoutes = require("./routes/progressRoutes");
 app.use("/api", progressRoutes);
 const labourRoutes = require("./routes/labourRoutes");
 app.use("/api/labour", labourRoutes);
-
+const equipmentRoutes = require("./routes/equipmentRoutes");
+app.use("/api", equipmentRoutes);
 
 
 
