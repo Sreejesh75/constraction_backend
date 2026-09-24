@@ -155,4 +155,152 @@ router.post("/logout", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/send-otp:
+ *   post:
+ *     summary: Send 4-digit OTP valid for 2 minutes to user mobile number
+ *     tags:
+ *       - User Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 example: "9876543210"
+ *               name:
+ *                 type: string
+ *                 example: "Sreejesh"
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ */
+router.post("/send-otp", async (req, res) => {
+  const { phone, name } = req.body;
+
+  if (!phone) {
+    return res.json({ status: false, message: "Phone number is required" });
+  }
+
+  const cleanPhone = phone.toString().trim();
+
+  try {
+    // Generate 4-digit OTP (1000 - 9999)
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // OTP expires in 2 minutes (120,000 ms)
+    const otpExpiresAt = new Date(Date.now() + 2 * 60 * 1000);
+
+    let user = await User.findOne({ phone: cleanPhone });
+
+    if (!user) {
+      user = new User({
+        phone: cleanPhone,
+        name: name || `User_${cleanPhone.slice(-4)}`
+      });
+    } else if (name && !user.name) {
+      user.name = name;
+    }
+
+    user.otp = otp;
+    user.otpExpiresAt = otpExpiresAt;
+    await user.save();
+
+    console.log(`[OTP SENT] Phone: ${cleanPhone} | OTP: ${otp} | ExpiresAt: ${otpExpiresAt.toISOString()}`);
+
+    res.json({
+      status: true,
+      message: "OTP sent successfully. Valid for 2 minutes.",
+      phone: cleanPhone,
+      otp, // Included for development/testing
+      otpExpiresAt
+    });
+  } catch (error) {
+    console.error("Send OTP Error:", error);
+    res.json({ status: false, message: "Error sending OTP", error: error.message || error.toString() });
+  }
+});
+
+/**
+ * @swagger
+ * /api/verify-otp:
+ *   post:
+ *     summary: Verify 4-digit OTP for user mobile number
+ *     tags:
+ *       - User Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *               - otp
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 example: "9876543210"
+ *               otp:
+ *                 type: string
+ *                 example: "1234"
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ */
+router.post("/verify-otp", async (req, res) => {
+  const { phone, otp } = req.body;
+
+  if (!phone || !otp) {
+    return res.json({ status: false, message: "Phone number and OTP are required" });
+  }
+
+  const cleanPhone = phone.toString().trim();
+  const cleanOtp = otp.toString().trim();
+
+  try {
+    const user = await User.findOne({ phone: cleanPhone });
+
+    if (!user || !user.otp || !user.otpExpiresAt) {
+      return res.json({ status: false, message: "No active OTP request found for this phone number" });
+    }
+
+    // Check if OTP has expired (2 minute validity limit)
+    if (new Date() > new Date(user.otpExpiresAt)) {
+      return res.json({ status: false, message: "OTP has expired. Please request a new OTP." });
+    }
+
+    // Check if OTP matches
+    if (user.otp !== cleanOtp) {
+      return res.json({ status: false, message: "Invalid OTP. Please check and try again." });
+    }
+
+    // Clear OTP after successful verification
+    user.otp = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    res.json({
+      status: true,
+      message: "OTP verified successfully",
+      userId: user._id,
+      user: {
+        _id: user._id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+    res.json({ status: false, message: "Error verifying OTP", error: error.message || error.toString() });
+  }
+});
+
 module.exports = router;
